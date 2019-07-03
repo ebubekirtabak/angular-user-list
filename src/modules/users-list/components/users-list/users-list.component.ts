@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { PageEvent } from '@angular/material';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs/operators';
-import { UserInterface } from '../../../../interfaces';
+import {DataInterface, PageInterface, UserInterface} from '../../../../interfaces';
 import { ApiService } from '../../../core/services';
 
 @Component({
@@ -13,7 +13,7 @@ import { ApiService } from '../../../core/services';
 export class UsersListComponent implements OnInit {
 
   displayedColumns = ['first_name', 'last_name', 'email'];
-  userList: any[] = [];
+  userList: DataInterface;
   pagesCount: number;
 
   constructor(private activatedRoute: ActivatedRoute,
@@ -24,8 +24,8 @@ export class UsersListComponent implements OnInit {
     this.activatedRoute.data.pipe(
       map(data => data.users)
     )
-      .subscribe((users: UserInterface[]) => {
-        this.userList = users;
+      .subscribe((users: PageInterface) => {
+        this.userList = users.data;
       });
 
     this.activatedRoute.data.pipe(
@@ -33,11 +33,17 @@ export class UsersListComponent implements OnInit {
     )
       .subscribe(paginationInfo => {
         this.pagesCount = paginationInfo.total;
-      })
+      });
+
+    this.activatedRoute.queryParams.subscribe(
+      params => {
+        console.log('queryParams', params['page']);
+      }
+    );
   }
 
   pageChanged(event: PageEvent): void {
-    let page: number = event.pageIndex + 1;
+    const page = event.pageIndex + 1;
     this.router.navigate(['./'], { queryParams: { page } });
   }
 
